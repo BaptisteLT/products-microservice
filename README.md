@@ -19,4 +19,4 @@ Symfony : http://127.0.0.1:8082
 PhpMyAdmin : http://127.0.0.1:8083
 
 Pour éxec les commandes symfony:
-docker exec -it php bash
+docker exec -it php2 bash
