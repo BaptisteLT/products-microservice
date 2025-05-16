@@ -15,15 +15,36 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\HasLifecycleCallbacks]
-#[Get]
-#[Put(security: "is_granted('ROLE_ADMIN')")]
-#[Patch(security: "is_granted('ROLE_ADMIN')")]
-#[GetCollection]
-#[Post(security: "is_granted('ROLE_ADMIN')")]
-#[Delete(security: "is_granted('ROLE_ADMIN')")]
 #[ApiResource(
     normalizationContext: ['groups' => ['customer:read']],
     denormalizationContext: ['groups' => ['customer:write']],
+    operations: [
+        new Get(
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+            normalizationContext: ['groups' => ['customer:read']]
+        ),
+        new Put(
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+            denormalizationContext: ['groups' => ['customer:write']]
+        ),
+        new Patch(
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+            denormalizationContext: ['groups' => ['customer:write']]
+        ),
+        new GetCollection(
+            uriTemplate: '/my-products',
+            normalizationContext: ['groups' => ['customer:read']],
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"
+        ),
+        /*new Post(
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_WEB_SHOPPER')",
+            denormalizationContext: ['groups' => ['webshopper:write']],
+            processor: ProductPostProcessor::class // Custom processor needed
+        ),*/
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+        )
+    ]
 )]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -34,28 +55,31 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(["customer:read"])]
+    #[Groups(["customer:read", "customer:write"])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[Groups(["customer:read", "customer:write"])]
+    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[Groups(["customer:read", "customer:write"])]
+    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column]
     private ?int $priceInCents = null;
 
-    #[Groups(["customer:read", "customer:write"])]
+    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[Groups(["customer:read", "customer:write"])]
+    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $color = null;
 
-    #[Groups(["customer:read", "customer:write"])]
+    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column]
     private ?int $stock = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $customerId = null;
 
     public function getId(): ?int
     {
@@ -138,6 +162,18 @@ class Product
     public function setStock(int $stock): static
     {
         $this->stock = $stock;
+
+        return $this;
+    }
+
+    public function getCustomerId(): ?int
+    {
+        return $this->customerId;
+    }
+
+    public function setCustomerId(?int $customerId): static
+    {
+        $this->customerId = $customerId;
 
         return $this;
     }
