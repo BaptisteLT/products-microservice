@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ApiResource]
@@ -20,9 +21,11 @@ class Product
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Length(max: 255, maxMessage: 'The name cannot be longer than 255 characters.')]
     private ?string $name = null;
 
     #[ORM\Column]
+    #[Assert\PositiveOrZero(message: 'The price cannot be negative.')]
     private ?int $priceInCents = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -32,6 +35,7 @@ class Product
     private ?string $color = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: 'The stock cannot be negative.')]
     private ?int $stock = null;
 
     public function getId(): ?int
