@@ -3,12 +3,29 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ORM\HasLifecycleCallbacks]
+#[Get]
+#[Put(security: "is_granted('ROLE_ADMIN')")]
+#[Patch(security: "is_granted('ROLE_ADMIN')")]
+#[GetCollection]
+#[Post(security: "is_granted('ROLE_ADMIN')")]
+#[Delete(security: "is_granted('ROLE_ADMIN')")]
+#[ApiResource(
+    normalizationContext: ['groups' => ['customer:read']],
+    denormalizationContext: ['groups' => ['customer:write']],
+)]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
-#[ApiResource]
 class Product
 {
     #[ORM\Id]
@@ -17,26 +34,40 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(["customer:read"])]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[Groups(["customer:read", "customer:write"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[Groups(["customer:read", "customer:write"])]
     #[ORM\Column]
     private ?int $priceInCents = null;
 
+    #[Groups(["customer:read", "customer:write"])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[Groups(["customer:read", "customer:write"])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $color = null;
 
+    #[Groups(["customer:read", "customer:write"])]
     #[ORM\Column]
     private ?int $stock = null;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
