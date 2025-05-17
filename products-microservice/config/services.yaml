@@ -23,3 +23,9 @@ services:
     App\Doctrine\ProductCustomerFilterExtension:
         tags:
             - { name: api_platform.doctrine.orm.query_extension.collection }
+
+    App\State\ProductSetCustomerUuidProcessor:
+        bind:
+            $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
+        tags:
+            - { name: api_platform.state_processor }

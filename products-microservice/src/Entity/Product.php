@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\ProductRepository;
+use App\State\ProductSetCustomerUuidProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -36,11 +37,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
             normalizationContext: ['groups' => ['customer:read']],
             security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"
         ),
-        /*new Post(
+        new Post(
             security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_WEB_SHOPPER')",
             denormalizationContext: ['groups' => ['webshopper:write']],
-            processor: ProductPostProcessor::class // Custom processor needed
-        ),*/
+            processor: ProductSetCustomerUuidProcessor::class
+        ),
         new Delete(
             security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
         )
