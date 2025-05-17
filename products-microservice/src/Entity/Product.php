@@ -20,15 +20,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
     denormalizationContext: ['groups' => ['customer:write']],
     operations: [
         new Get(
-            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
             normalizationContext: ['groups' => ['customer:read']]
         ),
         new Put(
-            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
             denormalizationContext: ['groups' => ['customer:write']]
         ),
         new Patch(
-            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
             denormalizationContext: ['groups' => ['customer:write']]
         ),
         new GetCollection(
@@ -42,7 +42,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             processor: ProductPostProcessor::class // Custom processor needed
         ),*/
         new Delete(
-            security: "is_granted('ROLE_ADMIN') or (object.getCustomerId() and object.getCustomerId() == user.getId())",
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
         )
     ]
 )]
@@ -78,8 +78,8 @@ class Product
     #[ORM\Column]
     private ?int $stock = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $customerId = null;
+    #[ORM\Column(type: 'uuid', nullable: true)]
+    private ?string $customerUuid = null; 
 
     public function getId(): ?int
     {
@@ -166,15 +166,15 @@ class Product
         return $this;
     }
 
-    public function getCustomerId(): ?int
+
+    public function getCustomerUuid(): ?string
     {
-        return $this->customerId;
+        return $this->customerUuid;
     }
-
-    public function setCustomerId(?int $customerId): static
+    
+    public function setCustomerUuid(?string $customerUuid): self
     {
-        $this->customerId = $customerId;
-
+        $this->customerUuid = $customerUuid;
         return $this;
     }
 }
