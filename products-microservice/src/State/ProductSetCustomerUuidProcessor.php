@@ -17,6 +17,7 @@ class ProductSetCustomerUuidProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
+        //Permet d'ajouter automatiquement le Uuid sans que l'utilisateur ne puisse le faire et donc potentiellement créer une commande pour quelqu'un d'autre.
         if (
             $data instanceof Product && 
             $operation instanceof Post

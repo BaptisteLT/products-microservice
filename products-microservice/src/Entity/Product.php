@@ -21,9 +21,19 @@ use Symfony\Component\Serializer\Annotation\Groups;
     denormalizationContext: ['groups' => ['customer:write']],
     operations: [
         new Get(
+            uriTemplate: '/my-product',
             security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
             normalizationContext: ['groups' => ['customer:read']]
         ),
+
+
+        new Get(
+            normalizationContext: ['groups' => ['public:read']]
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['public:read']]
+        ),
+
         new Put(
             security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
             denormalizationContext: ['groups' => ['customer:write']]
@@ -35,7 +45,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new GetCollection(
             uriTemplate: '/my-products',
             normalizationContext: ['groups' => ['customer:read']],
-            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_WEB_SHOPPER')"
         ),
         new Post(
             security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_WEB_SHOPPER')",
@@ -56,26 +66,26 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(["customer:read", "customer:write"])]
+    #[Groups(["public:read", "customer:read", "customer:write"])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column]
     private ?int $priceInCents = null;
 
-    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $color = null;
 
-    #[Groups(["customer:read", "customer:write", "webshopper:write"])]
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column]
     private ?int $stock = null;
 
