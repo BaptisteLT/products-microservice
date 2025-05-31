@@ -3,12 +3,61 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\ProductRepository;
+use App\State\ProductSetCustomerUuidProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+    normalizationContext: ['groups' => ['customer:read']],
+    denormalizationContext: ['groups' => ['customer:write']],
+    operations: [
+        new Get(
+            uriTemplate: '/my-product',
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
+            normalizationContext: ['groups' => ['customer:read']]
+        ),
+
+
+        new Get(
+            normalizationContext: ['groups' => ['public:read']]
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['public:read']]
+        ),
+
+        new Put(
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
+            denormalizationContext: ['groups' => ['customer:write']]
+        ),
+        new Patch(
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
+            denormalizationContext: ['groups' => ['customer:write']]
+        ),
+        new GetCollection(
+            uriTemplate: '/my-products',
+            normalizationContext: ['groups' => ['customer:read']],
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_WEB_SHOPPER')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_WEB_SHOPPER')",
+            denormalizationContext: ['groups' => ['webshopper:write']],
+            processor: ProductSetCustomerUuidProcessor::class
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or (object.getCustomerUuid() and object.getCustomerUuid() == user.getUuid())",
+        )
+    ]
+)]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
-#[ApiResource]
 class Product
 {
     #[ORM\Id]
@@ -17,26 +66,43 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(["public:read", "customer:read", "customer:write"])]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column]
     private ?int $priceInCents = null;
 
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $color = null;
 
+    #[Groups(["public:read", "customer:read", "customer:write", "webshopper:write"])]
     #[ORM\Column]
     private ?int $stock = null;
+
+    #[ORM\Column(type: 'uuid', nullable: true)]
+    private ?string $customerUuid = null; 
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
@@ -108,6 +174,18 @@ class Product
     {
         $this->stock = $stock;
 
+        return $this;
+    }
+
+
+    public function getCustomerUuid(): ?string
+    {
+        return $this->customerUuid;
+    }
+    
+    public function setCustomerUuid(?string $customerUuid): self
+    {
+        $this->customerUuid = $customerUuid;
         return $this;
     }
 }

@@ -19,4 +19,7 @@ Symfony : http://127.0.0.1:8082
 PhpMyAdmin : http://127.0.0.1:8083
 
 Pour éxec les commandes symfony:
-docker exec -it php bash
+docker exec -it php2 bash
+
+Accéder à la documentation: /api
+Pour récupérer un token JWT, il faut s'authentifier sur le micro-service customer. Et ensuite pour tester la documention API Mettre en haut à gauche "Bearer + VOTRE_JWT_TOKEN"
