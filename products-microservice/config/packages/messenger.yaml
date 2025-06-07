@@ -1,0 +1,43 @@
+framework:
+    messenger:
+        serializer:
+            default_serializer: messenger.transport.symfony_serializer
+            symfony_serializer:
+                format: json
+                context: {}
+
+        transports:
+            orders_in:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: messenger.transport.symfony_serializer
+                options:
+                    exchange:
+                        name: 'orders'
+                        type: topic
+                    queues:
+                        products_queue:
+                            binding_keys: ['order.created']
+
+            orders_out:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: messenger.transport.symfony_serializer
+                options:
+                    exchange:
+                        name: 'orders_responses'
+                        type: topic
+                    queues:
+                        orders_responses_queue:
+                            binding_keys: ['order.validated', 'order.cancelled']
+
+        routing:
+            App\Message\OrderCreatedMessage: orders_in
+            App\Message\OrderValidatedMessage: orders_out
+            App\Message\OrderCancelledMessage: orders_out
+            
+# when@test:
+#    framework:
+#        messenger:
+#            transports:
+#                # replace with your transport name here (e.g., my_transport: 'in-memory://')
+#                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+#                async: 'in-memory://'
