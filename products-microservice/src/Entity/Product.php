@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\Exception\QuantityException;
 use App\Repository\ProductRepository;
 use App\State\ProductSetCustomerUuidProcessor;
 use Doctrine\DBAL\Types\Types;
@@ -187,5 +188,12 @@ class Product
     {
         $this->customerUuid = $customerUuid;
         return $this;
+    }
+
+    public function decreaseStock(int $qty){
+        $this->stock = $this->stock - $qty;
+        if($this->stock < 0){
+            throw new QuantityException('Quantity negative.');
+        }
     }
 }
