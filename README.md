@@ -25,8 +25,8 @@ Accéder à la documentation: /api
 Pour récupérer un token JWT, il faut s'authentifier sur le micro-service customer. Et ensuite pour tester la documention API Mettre en haut à gauche "Bearer + VOTRE_JWT_TOKEN"
 
 
-Le covering est mis avec place avec PHPUnit et les commandes: run: vendor/bin/phpunit --coverage-clover clover.xml
-puis ./vendor/bin/coverage-check clover.xml 95
+Le covering est mis avec place avec PHPUnit et les commandes: run: vendor/bin/phpunit --coverage-clover cov.xml
+puis ./vendor/bin/coverage-check cov.xml 95
 dans phpunit.yml (github actions)
 La branche main est protégée dans le cas d'un pull request ayant un coverage de -95%
 
@@ -37,3 +37,4 @@ composer require symfony/messenger
 composer require symfony/amqp-messenger
 
 Pour consommer les commandes entrantes avec RabbitMQ: php bin/console messenger:consume orders_in -vv
+TODO: lancer via 
